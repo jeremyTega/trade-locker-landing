@@ -19,8 +19,24 @@ import Image from "next/image"
 export default function TradeLockerlandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
+  const [windowWidth, setWindowWidth] = useState(1200) // Default fallback value
+  const [isMounted, setIsMounted] = useState(false)
 
   const tradingWords = ["Tradelocker", "TradeMaster", "InvestPro", "MarketEdge", "TradingHub"]
+
+  // Pre-calculated random values to avoid hydration mismatch
+  const particlePositions = [
+    { top: 25, delay: 0 },
+    { top: 45, delay: 0.3 },
+    { top: 65, delay: 0.6 },
+    { top: 35, delay: 0.9 },
+    { top: 55, delay: 1.2 },
+    { top: 75, delay: 1.5 },
+    { top: 40, delay: 1.8 },
+    { top: 60, delay: 2.1 }
+  ]
+
+  const codeSnippets = ['01001', '11010', '00110', '10101', '11001', '00111']
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -28,6 +44,21 @@ export default function TradeLockerlandingPage() {
     }, 3000)
 
     return () => clearInterval(interval)
+  }, [])
+
+  // Handle window width safely and set mounted state
+  useEffect(() => {
+    setIsMounted(true)
+    if (typeof window !== 'undefined') {
+      setWindowWidth(window.innerWidth)
+      
+      const handleResize = () => {
+        setWindowWidth(window.innerWidth)
+      }
+      
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   const fadeInUp = {
@@ -188,22 +219,22 @@ export default function TradeLockerlandingPage() {
             />
             
             {/* Fast-moving data particles */}
-            {[...Array(8)].map((_, i) => (
+            {isMounted && [...Array(8)].map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute w-1 h-1 bg-blue-400/60 rounded-full"
                 style={{
                   left: `${10 + (i * 12)}%`,
-                  top: `${20 + Math.random() * 60}%`,
+                  top: `${particlePositions[i]?.top || 50}%`,
                 }}
                 animate={{
-                  x: [0, window.innerWidth || 1200],
+                  x: [0, windowWidth],
                   opacity: [0, 1, 1, 0],
                 }}
                 transition={{
-                  duration: 2 + Math.random(),
+                  duration: 2 + (i * 0.1),
                   repeat: Infinity,
-                  delay: i * 0.3,
+                  delay: particlePositions[i]?.delay || 0,
                   ease: "linear"
                 }}
               />
@@ -251,7 +282,7 @@ export default function TradeLockerlandingPage() {
             />
             
             {/* Matrix-style falling code */}
-            {[...Array(6)].map((_, i) => (
+            {isMounted && [...Array(6)].map((_, i) => (
               <motion.div
                 key={`code-${i}`}
                 className="absolute text-green-400/30 font-mono text-xs"
@@ -264,13 +295,13 @@ export default function TradeLockerlandingPage() {
                   opacity: [0, 0.7, 0.7, 0],
                 }}
                 transition={{
-                  duration: 3 + Math.random() * 2,
+                  duration: 3 + (i * 0.2),
                   repeat: Infinity,
-                  delay: Math.random() * 2,
+                  delay: i * 0.5,
                   ease: "linear"
                 }}
               >
-                {['01001', '11010', '00110', '10101'][Math.floor(Math.random() * 4)]}
+                {codeSnippets[i] || '01001'}
               </motion.div>
             ))}
             
@@ -695,7 +726,7 @@ export default function TradeLockerlandingPage() {
                     <li className="flex items-center">
                       <Check className="h-5 w-5 text-green-400 mr-2 flex-shrink-0" />
                       <span className="text-gray-300">Basic portfolio tracking</span>
-                    </li>
+                      </li>
                     <li className="flex items-center">
                       <Check className="h-5 w-5 text-green-400 mr-2 flex-shrink-0" />
                       <span className="text-gray-300">Email support</span>
